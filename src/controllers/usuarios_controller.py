@@ -1,41 +1,82 @@
+from sqlalchemy.orm import Session
+from src.models.db_models import Usuario
 from src.models.usuario import UsuarioCreate, UsuarioUpdate
-from typing import List
+import redis
+import json
+from datetime import datetime
+from dotenv import load_dotenv
+import os
 
-_usuarios = [
-    {"id": 1, "nombre": "Ana Quispe", "email": "ana@upds.edu.bo", "carrera": "Ingeniería de Sistemas", "semestre": 5},
-    {"id": 2, "nombre": "Carlos Mamani", "email": "carlos@upds.edu.bo", "carrera": "Ingeniería de Sistemas", "semestre": 3},
-    {"id": 3, "nombre": "María Flores", "email": "maria@upds.edu.bo", "carrera": "Ingeniería de Sistemas", "semestre": 7},
-]
-_siguiente_id = 4
+load_dotenv()
+
+REDIS_URL = os.getenv("REDIS_URL")
+pub = redis.Redis(
+    host="master-stinkbug-135566.upstash.io",
+    port=6379,
+    password="gQAAAAAAAhGOAAIgcDJmOGNhZjExMjRiNmQ0NjJjOTBlNjkxNDQxYzZiZjQyNg",
+    ssl=True,
+    decode_responses=True
+)
 
 
-def obtener_todos():
-    return _usuarios
+def publicar_evento(canal, tipo, payload):
+    mensaje = {
+        "tipo": tipo,
+        "payload": payload,
+        "timestamp": datetime.utcnow().isoformat(),
+        "version": "1.0"
+    }
+    pub.publish(canal, json.dumps(mensaje))
 
 
-def obtener_por_id(usuario_id: int):
-    return next((u for u in _usuarios if u["id"] == usuario_id), None)
+def obtener_todos(db: Session):
+    return db.query(Usuario).all()
 
 
-def crear(datos: UsuarioCreate):
-    global _siguiente_id
-    nuevo = {"id": _siguiente_id, **datos.model_dump()}
-    _usuarios.append(nuevo)
-    _siguiente_id += 1
+def obtener_por_id(usuario_id: int, db: Session):
+    return db.query(Usuario).filter(Usuario.id == usuario_id).first()
+
+
+def crear(datos: UsuarioCreate, db: Session):
+    nuevo = Usuario(
+        nombre=datos.nombre,
+        email=datos.email,
+        carrera=datos.carrera,
+        semestre=datos.semestre
+    )
+    db.add(nuevo)
+    db.commit()
+    db.refresh(nuevo)
+    publicar_evento(
+        canal="study:usuario:creado",
+        tipo="USUARIO_CREADO",
+        payload={
+            "id": nuevo.id,
+            "nombre": nuevo.nombre,
+            "email": nuevo.email,
+            "carrera": nuevo.carrera,
+            "semestre": nuevo.semestre
+        }
+    )
     return nuevo
 
 
-def actualizar(usuario_id: int, datos: UsuarioUpdate):
-    usuario = obtener_por_id(usuario_id)
+def actualizar(usuario_id: int, datos: UsuarioUpdate, db: Session):
+    usuario = obtener_por_id(usuario_id, db)
     if not usuario:
         return None
     cambios = datos.model_dump(exclude_unset=True)
-    usuario.update(cambios)
+    for campo, valor in cambios.items():
+        setattr(usuario, campo, valor)
+    db.commit()
+    db.refresh(usuario)
     return usuario
 
 
-def eliminar(usuario_id: int):
-    global _usuarios
-    original = len(_usuarios)
-    _usuarios = [u for u in _usuarios if u["id"] != usuario_id]
-    return len(_usuarios) < original
+def eliminar(usuario_id: int, db: Session):
+    usuario = obtener_por_id(usuario_id, db)
+    if not usuario:
+        return False
+    db.delete(usuario)
+    db.commit()
+    return True
