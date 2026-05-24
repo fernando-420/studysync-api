@@ -24,3 +24,17 @@ uvicorn src.main:app --reload
 ## URL de producción
 
 🔗 https://studysync-api-Fernando.onrender.com
+
+## Arquitectura — Actividad 3
+Cliente (Thunder Client)
+↓ HTTP
+API REST (FastAPI)
+↓              ↓
+Supabase DB    Redis Pub/Sub
+(persiste)     (notifica)
+↓
+Suscriptor
+### Por qué Redis además de la BD
+Supabase guarda los datos de forma permanente pero no notifica a otros servicios.
+Redis Pub/Sub permite que eventos como "usuario creado" lleguen en tiempo real
+a cualquier suscriptor sin que la API sepa quién está escuchando.
