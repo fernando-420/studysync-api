@@ -19,4 +19,9 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 @app.get("/")
 def root():
-    return {"mensaje": "Bienvenido a StudySync API", "docs": "/docs"}
+    return {
+        "mensaje": "Bienvenido a StudySync API",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "endpoints": "/api/usuarios"
+    }
