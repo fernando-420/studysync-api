@@ -4,8 +4,9 @@ from typing import List
 _usuarios = [
     {"id": 1, "nombre": "Ana Quispe", "email": "ana@upds.edu.bo", "carrera": "Ingeniería de Sistemas", "semestre": 5},
     {"id": 2, "nombre": "Carlos Mamani", "email": "carlos@upds.edu.bo", "carrera": "Ingeniería de Sistemas", "semestre": 3},
+    {"id": 3, "nombre": "María Flores", "email": "maria@upds.edu.bo", "carrera": "Ingeniería de Sistemas", "semestre": 7},
 ]
-_siguiente_id = 3
+_siguiente_id = 4
 
 
 def obtener_todos():
