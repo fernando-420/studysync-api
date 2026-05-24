@@ -21,9 +21,10 @@ def obtener_usuario(usuario_id: int):
 
 @router.post("", status_code=201)
 def crear_usuario(datos: UsuarioCreate):
+    if not datos.nombre or not datos.email or not datos.carrera:
+        raise HTTPException(status_code=400, detail="Faltan campos obligatorios: nombre, email, carrera")
     nuevo = ctrl.crear(datos)
     return {"mensaje": "Usuario creado exitosamente", "usuario": nuevo}
-
 
 @router.put("/{usuario_id}", status_code=200)
 def actualizar_usuario(usuario_id: int, datos: UsuarioUpdate):
