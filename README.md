@@ -23,4 +23,4 @@ uvicorn src.main:app --reload
 
 ## URL de producción
 
-🔗 https://TU-APP.onrender.com
+🔗 https://studysync-api-Fernando.onrender.com
