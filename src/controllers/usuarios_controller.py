@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from src.models.db_models import Usuario
-from src.models.usuario import UsuarioCreate, UsuarioUpdate
+# CAMBIO AQUÍ: Importamos UsuarioRegister con el alias UsuarioCreate para no romper tu código de abajo
+from src.models.usuario import UsuarioRegister as UsuarioCreate, UsuarioUpdate
 import redis
 import json
 from datetime import datetime
