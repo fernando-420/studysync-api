@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from src.models.usuario import UsuarioCreate, UsuarioUpdate
+# CAMBIO AQUÍ: Importamos UsuarioRegister en lugar de UsuarioCreate
+from src.models.usuario import UsuarioRegister, UsuarioUpdate
 from src.controllers import usuarios_controller as ctrl
 from src.database.connection import get_db
-# ¡NUEVO!: Importamos el validador del token JWT
 from src.auth.jwt_handler import get_current_user 
 
 router = APIRouter(prefix="/usuarios", tags=["Usuarios"])
@@ -11,10 +11,6 @@ router = APIRouter(prefix="/usuarios", tags=["Usuarios"])
 
 @router.get("", status_code=200, description="Listar usuarios (Requiere autenticación JWT)")
 def listar_usuarios(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    """
-    Ruta protegida. Si no envían el token Bearer válido, 
-    FastAPI responderá automáticamente un error 401.
-    """
     usuarios = ctrl.obtener_todos(db)
     return {"total": len(usuarios), "usuarios": usuarios}
 
@@ -27,8 +23,9 @@ def obtener_usuario(usuario_id: int, db: Session = Depends(get_db), current_user
     return usuario
 
 
+# CAMBIO AQUÍ: El tipo de dato de 'datos' ahora es UsuarioRegister
 @router.post("", status_code=201, description="Crear usuario administrador (Requiere autenticación JWT)")
-def crear_usuario(datos: UsuarioCreate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+def crear_usuario(datos: UsuarioRegister, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     if not datos.nombre or not datos.email or not datos.carrera:
         raise HTTPException(status_code=400, detail="Faltan campos obligatorios: nombre, email, carrera")
     nuevo = ctrl.crear(datos, db)
