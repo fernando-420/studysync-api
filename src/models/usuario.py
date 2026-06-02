@@ -31,3 +31,9 @@ class Usuario(BaseModel):
     email: str
     carrera: str
     semestre: int
+    # Nuevo esquema para cuando se actualicen datos (PUT /usuarios/{id})
+# Ponemos los campos opcionales (con None) o requeridos según prefieras
+class UsuarioUpdate(BaseModel):
+    nombre: str | None = None
+    carrera: str | None = None
+    semestre: int | None = None
