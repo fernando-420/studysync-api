@@ -1,19 +1,28 @@
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, EmailStr
 
+# Lo que se envía para registrarse (POST /auth/register)
+class UsuarioRegister(BaseModel):
+    nombre: str
+    email: EmailStr
+    password: str
+    carrera: str
+    semestre: int
 
-class UsuarioCreate(BaseModel):
+# Lo que se envía para iniciar sesión (POST /auth/login)
+class UsuarioLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+# Lo que responde la API (Ocultando la contraseña por seguridad)
+class UsuarioResponse(BaseModel):
+    id: int
     nombre: str
     email: str
     carrera: str
     semestre: int
 
-
-class UsuarioUpdate(BaseModel):
-    nombre: Optional[str] = None
-    email: Optional[str] = None
-    carrera: Optional[str] = None
-    semestre: Optional[int] = None
+    class Config:
+        from_attributes = True
 
 
 class Usuario(BaseModel):
